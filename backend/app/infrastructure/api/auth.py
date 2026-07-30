@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -94,18 +94,21 @@ def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(request: UserLoginRequest, db: Session = Depends(get_db)):
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(), # <--- Terima data form dari Swagger UI
+    db: Session = Depends(get_db)
+):
     user_repo = UserRepository(db)
-    user = user_repo.get_by_email(request.email)
     
-    # Verifikasi Keberadaan User & Kebenaran Password
-    if not user or not verify_password(request.password, user.password_hash):
+    # OAuth2PasswordRequestForm menyimpan data di field form_data.username (isi dengan email) dan form_data.password
+    user = user_repo.get_by_email(form_data.username)
+    
+    if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email atau password salah."
         )
     
-    # Generate JWT Token
     access_token = create_access_token(subject=user.id)
     return TokenResponse(access_token=access_token)
 

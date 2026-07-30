@@ -8,7 +8,7 @@ load_dotenv()
 # Format: postgresql://username:password@localhost:5432/database_name
 DATABASE_URL = os.getenv(
     "DATABASE_URL", 
-    "postgresql://postgres:terserahelu@localhost:5433/journal_db"
+    "postgresql://postgres:terserahelu@localhost:5433/journal.db"
 )
 
 # Engine setup dengan Connection Pooling
