@@ -54,9 +54,15 @@ app = FastAPI(
 # ]
 
 # --- KONFIGURASI CORS (Cross-Origin Resource Sharing) ---
-allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
-origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()] if allowed_origins_env != "*" else ["*"]
+CORS_ORIGINS_ENV = os.getenv("CORS_ORIGINS", "")
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
+if CORS_ORIGINS_ENV:
+    origins.extend([origin.strip() for origin in CORS_ORIGINS_ENV.split(",")])
+    
 app.add_middleware(
     CORSMiddleware,
     # allow_origins=origins,       # Mengizinkan domain frontend mengakses API
