@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy.orm import Session
 from app.adapters.database.models import UserModel, JournalEntryModel
 from app.core.entities import JournalEntryEntity

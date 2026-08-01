@@ -19,25 +19,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Mengirim request berformat Form Data sesuai OAuth2 standard
-      const formData = new URLSearchParams();
-      formData.append('username', email); // form_data.username diisi email
-      formData.append('password', password);
-
-      const response = await fetch('http://127.0.0.1:8000/api/auth/login', {
+      const data = await apiFetch<TokenResponse>('/api/auth/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: formData,
+        body: JSON.stringify({ email, password }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Login gagal.');
-      }
-
-      const data: TokenResponse = await response.json();
 
       // Simpan JWT Access Token ke localStorage
       localStorage.setItem('token', data.access_token);

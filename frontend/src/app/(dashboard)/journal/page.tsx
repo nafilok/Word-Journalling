@@ -38,7 +38,7 @@ export default function JournalDashboardPage() {
     setError('');
     try {
       // Mengambil entri jurnal terpaginasi dari FastAPI
-      const data = await apiFetch<JournalEntry[]>('/api/entries?page=1&size=10');
+      const data = await apiFetch<JournalEntry[]>('/api/entries?page=1&limit=10');
       setEntries(data);
     } catch (err: any) {
       if (err.message && err.message.includes('401')) {
