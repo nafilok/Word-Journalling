@@ -18,6 +18,7 @@
 #         "message": "Engine FastAPI siap menerima request!"
 #     }
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.infrastructure.api.auth import router as auth_router
