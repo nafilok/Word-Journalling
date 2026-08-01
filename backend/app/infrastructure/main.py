@@ -47,15 +47,19 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# origins = [
+#     "http://localhost:3000",      # Port default Next.js
+#     "http://127.0.0.1:3000",
+# ]
+
 # --- KONFIGURASI CORS (Cross-Origin Resource Sharing) ---
-origins = [
-    "http://localhost:3000",      # Port default Next.js
-    "http://127.0.0.1:3000",
-]
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
+origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()] if allowed_origins_env != "*" else ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,       # Mengizinkan domain frontend mengakses API
+    # allow_origins=origins,       # Mengizinkan domain frontend mengakses API
+    allow_origins=origins,       # Mengizinkan domain frontend Vercel & localhost mengakses API
     allow_credentials=True,      # Mengizinkan pengiriman cookie / authorization header
     allow_methods=["*"],          # Mengizinkan semua HTTP Method (GET, POST, PUT, DELETE, dll)
     allow_headers=["*"],          # Mengizinkan semua HTTP Headers
