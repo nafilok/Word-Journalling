@@ -39,11 +39,13 @@ The backend strictly adheres to Clean Architecture principles, ensuring that
 the core business domain remains isolated from frameworks, databases, and 
 external services:
 
+```
 +------------------+        +--------------------------+        +------------------------+
 |   Core Domain    | <----- |      Adapters / DB       | <----- |  Infrastructure / API  |
 | (Pure Entities,  |        |  (Repositories, Models,  |        |   (FastAPI Routers,    |
 |   Security Logic)|        |     External Clients)    |        |    JWT Middleware)     |
 +------------------+        +--------------------------+        +------------------------+
+```
 
 - Core Layer (app/core):
   Contains pure Python domain entities (e.g., JournalEntryEntity) and security 
@@ -81,6 +83,7 @@ Frontend Client:
 4. PROJECT DIRECTORY STRUCTURE
 --------------------------------------------------------------------------------
 
+```text
 Word-Journalling/
 ├── backend/
 │   ├── app/
@@ -124,7 +127,8 @@ Word-Journalling/
 ├── .gitignore
 ├── pyrightconfig.json
 ├── README.md                         # Main repository documentation (Markdown)
-└── README.txt                        # Project documentation (this file)
+└── README.txt                        # Project documentation
+```
 
 
 5. KEY FEATURES
