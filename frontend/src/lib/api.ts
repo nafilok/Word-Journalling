@@ -25,9 +25,22 @@ export async function apiFetch<T>(
 
   // 4. Penanganan Error HTTP Global
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `HTTP Error: ${response.status}`);
+  const errorData = await response.json().catch(() => ({}));
+  
+  // Ekstraksi teks error agar tidak menjadi Objek
+  let errorMessage = "Terjadi kesalahan pada server.";
+  
+  if (typeof errorData.detail === "string") {
+    errorMessage = errorData.detail;
+  } else if (Array.isArray(errorData.detail)) {
+    // Jika Pydantic validation error (Array of objects)
+    errorMessage = errorData.detail.map((err: any) => err.msg).join(", ");
+  } else if (typeof errorData.detail === "object" && errorData.detail !== null) {
+    errorMessage = JSON.stringify(errorData.detail);
   }
+
+  throw new Error(errorMessage);
+}
 
   return response.json() as Promise<T>;
 }

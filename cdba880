@@ -1,0 +1,15 @@
+[33mcdba880[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix(auth): update login endpoint payload to JSON and normalize email
+[33ma3abacd[m fix(deps): pin bcrypt to 4.0.1 to resolve passlib compatibility issue
+[33m6fbacb7[m fix(cors): update robust CORS configuration for Vercel origin
+[33m82863c1[m feat: initialize FastAPI application with CORS middleware, database auto-migration, and API routing
+[33mf7dd70b[m fix(backend): add missing os module import in main.py
+[33mec94c5d[m Prepare for cloud deployment
+[33mc55db32[m feat: implement backend database repositories and FastAPI integration with frontend login page
+[33m9cd71aa[m test
+[33md1a6c1c[m modified readme
+[33m86b8b9b[m docs: update documentation for word journalling project requirements
+[33m3363aad[m feat(frontend): implement JWT auth flow, protected journal dashboard, and fix Tailwind CSS build pipeline
+[33mdc79728[m feat(core-mvp): implement clean architecture backend with JWT auth and paginated entries CRUD
+[33me9f6da3[m feat: implement user authentication and database schema for journaling system
+[33md3061fe[m architectural blueprint
+[33mf70d0a0[m letsgo kita mulai
