@@ -107,8 +107,8 @@ export default function JournalDashboardPage() {
       {/* Header Navigation */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">📓</span>
+          <div className="flex items-center gap-3">
+            <img src="/icon.svg" alt="Journal Icon" className="w-8 h-8 rounded-lg shadow-sm" />
             <h1 className="text-xl font-bold text-slate-800">Word Journaling</h1>
           </div>
           <button

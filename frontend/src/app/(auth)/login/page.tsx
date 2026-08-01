@@ -39,6 +39,9 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 border border-slate-100">
+        <div className="flex justify-center mb-3">
+          <img src="/icon.svg" alt="Journal Logo" className="w-12 h-12 rounded-xl shadow-md" />
+        </div>
         <h2 className="text-2xl font-bold text-center text-slate-800 mb-2">
           Selamat Datang Kembali
         </h2>
