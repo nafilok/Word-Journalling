@@ -54,25 +54,40 @@ app = FastAPI(
 # ]
 
 # --- KONFIGURASI CORS (Cross-Origin Resource Sharing) ---
-CORS_ORIGINS_ENV = os.getenv("CORS_ORIGINS", "")
-origins = [
+# CORS_ORIGINS_ENV = os.getenv("CORS_ORIGINS", "")
+# origins = [
+#     "http://localhost:3000",
+#     "http://127.0.0.1:3000",
+# ]
+
+# -------------------------------------------------------------------------
+# CORS CONFIGURATION (PRODUCTION-READY)
+# -------------------------------------------------------------------------
+raw_origins = os.getenv("CORS_ORIGINS", "") or os.getenv("ALLOWED_ORIGINS", "")
+
+# Daftar origin dasar (Lokal & Vercel Production)
+allowed_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://word-journalling.vercel.app",  # Domain Vercel (tanpa garis miring di akhir)
 ]
 
-if CORS_ORIGINS_ENV:
-    origins.extend([origin.strip() for origin in CORS_ORIGINS_ENV.split(",")])
-    
+# Parsing tambahan jika ada dari Environment Variable di Render
+if raw_origins:
+    for item in raw_origins.split(","):
+        cleaned = item.strip().rstrip("/")  # Hapus spasi dan trailing slash '/'
+        if cleaned and cleaned not in allowed_origins:
+            allowed_origins.append(cleaned)
+
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=origins,       # Mengizinkan domain frontend mengakses API
-    allow_origins=origins,       # Mengizinkan domain frontend Vercel & localhost mengakses API
-    allow_credentials=True,      # Mengizinkan pengiriman cookie / authorization header
-    allow_methods=["*"],          # Mengizinkan semua HTTP Method (GET, POST, PUT, DELETE, dll)
-    allow_headers=["*"],          # Mengizinkan semua HTTP Headers
+    allow_origins=allowed_origins,  # Mengizinkan origin spesifik
+    allow_credentials=True,
+    allow_methods=["*"],             # Mengizinkan semua HTTP Methods (GET, POST, OPTIONS, dll)
+    allow_headers=["*"],             # Mengizinkan semua Headers (Content-Type, Authorization, dll)
 )
 
-# Registrasi Router
+# Include Routers
 app.include_router(auth_router)
 app.include_router(entries_router)
 
