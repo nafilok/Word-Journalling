@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
-import { JournalEntry, JournalCreatePayload } from '@/types/journal';
+import { JournalEntry, JournalCreatePayload, JournalStats } from '@/types/journal';
 
 type EmojiType = 'happy' | 'neutral' | 'sad';
 
@@ -16,6 +16,7 @@ const EMOJI_OPTIONS = [
 export default function JournalDashboardPage() {
   const router = useRouter();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [stats, setStats] = useState<JournalStats | null>(null);
   const [content, setContent] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState<EmojiType>('happy');
   const [isLoading, setIsLoading] = useState(true);
@@ -33,13 +34,26 @@ export default function JournalDashboardPage() {
     loadJournalEntries();
   }, [router]);
 
+  const fetchStats = async () => {
+    try {
+      const statsData = await apiFetch<JournalStats>('/api/entries/stats');
+      setStats(statsData);
+    } catch {
+      // Silently ignore stats error fallback
+    }
+  };
+
   const loadJournalEntries = async () => {
     setIsLoading(true);
     setError('');
     try {
-      // Mengambil entri jurnal terpaginasi dari FastAPI
-      const data = await apiFetch<JournalEntry[]>('/api/entries?page=1&limit=10');
-      setEntries(data);
+      // Mengambil entri jurnal & statistik streak secara bersamaan
+      const [entriesData, statsData] = await Promise.all([
+        apiFetch<JournalEntry[]>('/api/entries?page=1&limit=10'),
+        apiFetch<JournalStats>('/api/entries/stats').catch(() => null),
+      ]);
+      setEntries(entriesData);
+      if (statsData) setStats(statsData);
     } catch (err: any) {
       if (err.message && err.message.includes('401')) {
         localStorage.removeItem('token');
@@ -67,10 +81,11 @@ export default function JournalDashboardPage() {
         body: JSON.stringify(payload),
       });
 
-      // Update state lokal secara reaktif (prepend)
+      // Update state lokal secara reaktif (prepend) & re-fetch streak stats
       setEntries((prev) => [newEntry, ...prev]);
       setContent('');
       setSelectedEmoji('happy');
+      fetchStats();
     } catch (err: any) {
       setError(err.message || 'Gagal menyimpan jurnal.');
     } finally {
@@ -173,26 +188,59 @@ export default function JournalDashboardPage() {
             </form>
           </div>
 
-          {/* Dynamic Mood Summary Card */}
-          <div className="bg-gradient-to-br from-indigo-600 to-purple-600 p-6 rounded-xl text-white shadow-md">
-            <h3 className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-2">Ringkasan Emosi Catatan</h3>
-            <div className="flex items-center gap-3 my-2">
-              <div className="flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg text-sm">
-                <span>😊</span>
-                <span className="font-bold">{happyCount}</span>
+          {/* Gamification & Daily Streak Card */}
+          <div className="bg-gradient-to-br from-indigo-700 via-purple-700 to-indigo-900 p-6 rounded-xl text-white shadow-lg border border-indigo-500/30 relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 opacity-10 text-8xl pointer-events-none select-none">
+              🔥
+            </div>
+
+            <div className="flex justify-between items-start mb-3">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-wider text-indigo-200">
+                  🔥 Streak Harian Menulis
+                </span>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="text-3xl font-extrabold text-amber-300">
+                    {stats?.current_streak || 0}
+                  </span>
+                  <span className="text-sm font-medium text-slate-200">
+                    Hari Beruntun
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg text-sm">
-                <span>😐</span>
-                <span className="font-bold">{neutralCount}</span>
-              </div>
-              <div className="flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg text-sm">
-                <span>😢</span>
-                <span className="font-bold">{sadCount}</span>
+
+              <div className="bg-amber-400/20 text-amber-300 text-xs px-2.5 py-1 rounded-full border border-amber-400/40 font-semibold flex items-center gap-1">
+                <span>🏆 Rekor:</span>
+                <span className="font-bold">{stats?.longest_streak || 0} Hari</span>
               </div>
             </div>
-            <p className="text-xs opacity-85 mt-3">
-              Total {entries.length} catatan jurnal terekam dengan pilihan reaksi emotif.
-            </p>
+
+            {/* Today status indicator */}
+            <div className="mt-3 pt-3 border-t border-white/10">
+              {stats?.wrote_today ? (
+                <div className="flex items-center gap-2 text-xs text-emerald-300 font-medium bg-emerald-500/20 px-3 py-2 rounded-lg border border-emerald-500/30">
+                  <span className="text-base">✅</span>
+                  <span>Hebat! Kamu sudah mencatat perkembanganmu hari ini.</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-xs text-amber-200 font-medium bg-amber-500/20 px-3 py-2 rounded-lg border border-amber-500/30">
+                  <span className="text-base">⚡</span>
+                  <span>Tulis jurnal harimu sekarang untuk menjaga streak-mu!</span>
+                </div>
+              )}
+            </div>
+
+            {/* Sub summary: Mood count & Total entries */}
+            <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs opacity-90">
+              <div className="flex items-center gap-2 bg-white/10 px-2.5 py-1 rounded-lg">
+                <span>😊 {happyCount}</span>
+                <span>😐 {neutralCount}</span>
+                <span>😢 {sadCount}</span>
+              </div>
+              <span className="font-mono text-indigo-200 text-xs">
+                Total: {stats?.total_entries || entries.length} Jurnal
+              </span>
+            </div>
           </div>
         </div>
 

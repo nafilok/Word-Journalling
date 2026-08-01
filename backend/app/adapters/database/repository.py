@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from app.adapters.database.models import UserModel, JournalEntryModel
@@ -59,4 +60,15 @@ class JournalRepository:
             .limit(limit)
             .offset(offset)
             .all()
-        )        
+        )
+
+    def get_user_entry_dates(self, user_id: str) -> List[datetime]:
+        """
+        Mengambil semua timestamp created_at milik user tertentu untuk kalkulasi streak harian.
+        """
+        results = (
+            self.db.query(JournalEntryModel.created_at)
+            .filter(JournalEntryModel.user_id == user_id)
+            .all()
+        )
+        return [row[0] for row in results if row[0]]

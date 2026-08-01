@@ -12,3 +12,10 @@ export interface JournalCreatePayload {
   content: string;
   emoji?: string;
 }
+
+export interface JournalStats {
+  current_streak: number;
+  longest_streak: number;
+  total_entries: number;
+  wrote_today: boolean;
+}

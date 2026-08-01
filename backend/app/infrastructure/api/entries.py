@@ -8,7 +8,7 @@ from uuid import UUID
 from app.adapters.database.session import get_db
 from app.adapters.database.repository import JournalRepository
 from app.infrastructure.api.auth import get_current_user, UserResponse
-from app.core.entities import JournalEntryEntity
+from app.core.entities import JournalEntryEntity, StreakCalculator
 
 router = APIRouter(prefix="/api/entries", tags=["Journal Entries"])
 
@@ -28,6 +28,12 @@ class JournalEntryResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class JournalStatsResponse(BaseModel):
+    current_streak: int
+    longest_streak: int
+    total_entries: int
+    wrote_today: bool
 
 
 # --- ENDPOINTS TERPROTEKSI ---
@@ -78,3 +84,17 @@ def get_my_entries(
         offset=offset
     )
     return entries
+
+
+@router.get("/stats", response_model=JournalStatsResponse)
+def get_my_stats(
+    current_user: UserResponse = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Mengambil statistik gamifikasi streak harian milik pengguna yang sedang login.
+    """
+    journal_repo = JournalRepository(db)
+    timestamps = journal_repo.get_user_entry_dates(str(current_user.id))
+    calculator = StreakCalculator(timestamps)
+    return calculator.calculate()
