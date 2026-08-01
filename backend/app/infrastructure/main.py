@@ -91,6 +91,14 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(entries_router)
 
+@app.get("/", tags=["System Health"])
+def root():
+    return {
+        "status": "online",
+        "message": "Engine FastAPI siap menerima request!",
+        "docs": "/docs"
+    }
+
 @app.get("/health", tags=["System Health"])
 def health_check():
     return {
