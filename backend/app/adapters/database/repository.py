@@ -35,10 +35,11 @@ class JournalRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def create(self, user_id: str, content: str, word_count: int) -> JournalEntryModel:
+    def create(self, user_id: str, content: str, word_count: int, emoji: str = "happy") -> JournalEntryModel:
         entry_db = JournalEntryModel(
             user_id=user_id,
             content=content,
+            emoji=emoji,
             word_count=word_count
         )
         self.db.add(entry_db)

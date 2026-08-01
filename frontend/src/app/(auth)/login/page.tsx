@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation'
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
-import { tokenResponse } from '@/types/auth';
+import { TokenResponse } from '@/types/auth';
 
 export default function LoginPage() {
   const router = useRouter();

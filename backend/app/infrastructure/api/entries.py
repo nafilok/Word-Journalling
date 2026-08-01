@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from uuid import UUID
 
@@ -15,11 +15,13 @@ router = APIRouter(prefix="/api/entries", tags=["Journal Entries"])
 # --- PYDANTIC SCHEMAS (DTO) ---
 class JournalEntryCreateRequest(BaseModel):
     content: str
+    emoji: Optional[str] = "happy"
 
 class JournalEntryResponse(BaseModel):
     id: UUID
     user_id: UUID
     content: str
+    emoji: Optional[str] = "happy"
     word_count: int
     created_at: datetime
     updated_at: datetime
@@ -42,7 +44,8 @@ def create_entry(
     # 1. Gunakan Pure Domain Entity untuk menghitung word count (Clean Architecture)
     domain_entity = JournalEntryEntity(
         user_id=current_user.id,
-        content=request.content
+        content=request.content,
+        emoji=request.emoji
     )
     calculated_words = domain_entity.calculate_word_count
 
@@ -51,7 +54,8 @@ def create_entry(
     new_entry = journal_repo.create(
         user_id=str(current_user.id),
         content=request.content,
-        word_count=calculated_words
+        word_count=calculated_words,
+        emoji=domain_entity.emoji
     )
     return new_entry
 

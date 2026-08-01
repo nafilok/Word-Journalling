@@ -28,9 +28,18 @@ from app.adapters.database.session import engine, Base
 # definisi kelas UserModel dan JournalEntryModel ke dalam Base.metadata
 import app.adapters.database.models
 
+from sqlalchemy import text
+
 # --- EKSEKUSI AUTOMATIC DDL GENERATION ---
 # Perintah ini akan mengirim instruksi "CREATE TABLE IF NOT EXISTS" ke PostgreSQL
 Base.metadata.create_all(bind=engine)
+
+with engine.connect() as conn:
+    try:
+        conn.execute(text("ALTER TABLE entries ADD COLUMN IF NOT EXISTS emoji VARCHAR(20) DEFAULT 'happy'"))
+        conn.commit()
+    except Exception:
+        pass
 
 app = FastAPI(
     title="AI Journaling API",

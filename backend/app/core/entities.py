@@ -11,6 +11,7 @@ class JournalEntryEntity:
         self,
         user_id: UUID,
         content: str,
+        emoji: Optional[str] = "happy",
         id: Optional[UUID] = None,
         created_at: Optional[datetime] = None,
         updated_at: Optional[datetime] = None
@@ -18,6 +19,7 @@ class JournalEntryEntity:
         self.id = id
         self.user_id = user_id
         self.content = content
+        self.emoji = emoji or "happy"
         self.created_at = created_at or datetime.utcnow()
         self.updated_at = updated_at or datetime.utcnow()
 

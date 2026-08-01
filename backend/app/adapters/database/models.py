@@ -26,6 +26,7 @@ class JournalEntryModel(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     content = Column(Text, nullable=False)
+    emoji = Column(String(20), nullable=True, default="happy")
     word_count = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
