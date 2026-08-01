@@ -19,6 +19,7 @@
 #     }
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.infrastructure.api.auth import router as auth_router
 from app.infrastructure.api.entries import router as entries_router
 from app.adapters.database.session import engine, Base
@@ -35,6 +36,20 @@ app = FastAPI(
     title="AI Journaling API",
     description="Backend engine berbasis Clean Architecture & Machine Learning ready.",
     version="1.0.0"
+)
+
+# --- KONFIGURASI CORS (Cross-Origin Resource Sharing) ---
+origins = [
+    "http://localhost:3000",      # Port default Next.js
+    "http://127.0.0.1:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,       # Mengizinkan domain frontend mengakses API
+    allow_credentials=True,      # Mengizinkan pengiriman cookie / authorization header
+    allow_methods=["*"],          # Mengizinkan semua HTTP Method (GET, POST, PUT, DELETE, dll)
+    allow_headers=["*"],          # Mengizinkan semua HTTP Headers
 )
 
 # Registrasi Router
