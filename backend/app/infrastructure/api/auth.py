@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
+from typing import Optional
 from uuid import UUID
 
 from app.adapters.database.session import get_db
@@ -77,17 +78,21 @@ def get_current_user(
 def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
     user_repo = UserRepository(db)
     
-    # Validasi Keunikan Email & Username
-    if user_repo.get_by_email(request.email):
+    # 1. Normalisasi Data (Sanitasi Spasi & Huruf Kecil pada Email)
+    clean_email = request.email.strip().lower()
+    clean_username = request.username.strip()
+    
+    # 2. Validasi Keunikan Email & Username
+    if user_repo.get_by_email(clean_email):
         raise HTTPException(status_code=400, detail="Email sudah terdaftar.")
-    if user_repo.get_by_username(request.username):
+    if user_repo.get_by_username(clean_username):
         raise HTTPException(status_code=400, detail="Username sudah digunakan.")
     
-    # Hashing Password sebelum disimpan ke DB
+    # 3. Hashing Password sebelum disimpan ke DB
     hashed_pwd = hash_password(request.password)
     new_user = user_repo.create(
-        username=request.username,
-        email=request.email,
+        username=clean_username,
+        email=clean_email,
         password_hash=hashed_pwd
     )
     return new_user
@@ -95,21 +100,26 @@ def register(request: UserRegisterRequest, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(
-    form_data: OAuth2PasswordRequestForm = Depends(), # <--- Terima data form dari Swagger UI
+    request: UserLoginRequest, # <--- PERBAIKAN: Menerima JSON Body dari Frontend Next.js
     db: Session = Depends(get_db)
 ):
     user_repo = UserRepository(db)
     
-    # OAuth2PasswordRequestForm menyimpan data di field form_data.username (isi dengan email) dan form_data.password
-    user = user_repo.get_by_email(form_data.username)
+    # 1. Normalisasi Email Input
+    clean_email = request.email.strip().lower()
     
-    if not user or not verify_password(form_data.password, user.password_hash):
+    # 2. Cari User Berdasarkan Email
+    user = user_repo.get_by_email(clean_email)
+    
+    # 3. Verifikasi Keberadaan User & Kebenaran Password
+    if not user or not verify_password(request.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email atau password salah."
         )
     
-    access_token = create_access_token(subject=user.id)
+    # 4. Generate Access Token (Konversi UUID user.id ke string)
+    access_token = create_access_token(subject=str(user.id))
     return TokenResponse(access_token=access_token)
 
 
