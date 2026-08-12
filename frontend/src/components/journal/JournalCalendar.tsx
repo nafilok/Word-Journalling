@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface JournalCalendarProps {
   entryDates: Set<string>; // Tanggal dalam format YYYY-MM-DD
@@ -20,6 +20,13 @@ export default function JournalCalendar({
   onSelectDate,
 }: JournalCalendarProps) {
   const [currentDate, setCurrentDate] = useState(() => new Date());
+
+  useEffect(() => {
+    if (selectedDate) {
+      const d = new Date(selectedDate + 'T00:00:00');
+      setCurrentDate(d);
+    }
+  }, [selectedDate]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();

@@ -126,6 +126,21 @@ export default function JournalDashboardPage() {
   // Set tanggal yang memiliki entri jurnal untuk kalender
   const entryDatesSet = new Set(entries.map((e) => formatLocalDate(e.created_at)));
 
+  // Navigation handlers untuk berpindah hari (Previous & Next Day)
+  const handlePrevDay = () => {
+    if (!selectedDate) return;
+    const d = new Date(selectedDate + 'T00:00:00');
+    d.setDate(d.getDate() - 1);
+    setSelectedDate(formatLocalDate(d.toISOString()));
+  };
+
+  const handleNextDay = () => {
+    if (!selectedDate) return;
+    const d = new Date(selectedDate + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    setSelectedDate(formatLocalDate(d.toISOString()));
+  };
+
   // Filter entri jurnal berdasarkan tanggal kalender yang dipilih (Recall Feature)
   const filteredEntries = selectedDate
     ? entries.filter((e) => formatLocalDate(e.created_at) === selectedDate)
@@ -278,30 +293,52 @@ export default function JournalDashboardPage() {
             </h2>
             {selectedDate && (
               <span className="text-xs bg-indigo-100 text-indigo-800 font-medium px-2.5 py-1 rounded-full">
-                Terfilter por Kalender
+                Terfilter dari Kalender
               </span>
             )}
           </div>
 
-          {/* Alert Filter Status Kalender */}
+          {/* Alert Filter Status Kalender dengan Tombol Navigasi Harian (< & >) */}
           {selectedDate && (
-            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3.5 flex justify-between items-center text-xs text-indigo-900 shadow-sm">
-              <div className="flex items-center gap-2">
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3.5 flex flex-wrap gap-3 justify-between items-center text-xs text-indigo-900 shadow-sm">
+              <div className="flex items-center gap-3">
                 <span className="text-base">📅</span>
-                <span>
-                  Menampilkan jurnal tanggal{' '}
-                  <strong className="font-bold">
-                    {new Date(selectedDate + 'T00:00:00').toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
-                  </strong>
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrevDay}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-300 transition shadow-xs"
+                    title="Hari Sebelumnya"
+                  >
+                    <span>&lt;</span>
+                    <span className="hidden sm:inline text-[11px] font-semibold">Sebelumnya</span>
+                  </button>
+
+                  <span className="text-center font-medium px-1">
+                    Jurnal tanggal{' '}
+                    <strong className="font-bold text-indigo-950">
+                      {new Date(selectedDate + 'T00:00:00').toLocaleDateString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </strong>
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={handleNextDay}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-300 transition shadow-xs"
+                    title="Hari Berikutnya"
+                  >
+                    <span className="hidden sm:inline text-[11px] font-semibold">Berikutnya</span>
+                    <span>&gt;</span>
+                  </button>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedDate(null)}
-                className="bg-white hover:bg-indigo-100 text-indigo-700 font-semibold px-3 py-1 rounded-lg border border-indigo-300 transition shadow-xs"
+                className="bg-white hover:bg-indigo-100 text-indigo-700 font-semibold px-3 py-1 rounded-lg border border-indigo-300 transition shadow-xs ml-auto"
               >
                 Tampilkan Semua Jurnal
               </button>
