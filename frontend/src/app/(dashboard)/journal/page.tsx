@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { JournalEntry, JournalCreatePayload, JournalStats } from '@/types/journal';
+import JournalCalendar from '@/components/journal/JournalCalendar';
 
 type EmojiType = 'happy' | 'neutral' | 'sad';
 
@@ -19,6 +20,7 @@ export default function JournalDashboardPage() {
   const [stats, setStats] = useState<JournalStats | null>(null);
   const [content, setContent] = useState('');
   const [selectedEmoji, setSelectedEmoji] = useState<EmojiType>('happy');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -112,6 +114,23 @@ export default function JournalDashboardPage() {
     }
   };
 
+  // Helper format tanggal lokal YYYY-MM-DD
+  const formatLocalDate = (isoString: string) => {
+    const d = new Date(isoString);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  // Set tanggal yang memiliki entri jurnal untuk kalender
+  const entryDatesSet = new Set(entries.map((e) => formatLocalDate(e.created_at)));
+
+  // Filter entri jurnal berdasarkan tanggal kalender yang dipilih (Recall Feature)
+  const filteredEntries = selectedDate
+    ? entries.filter((e) => formatLocalDate(e.created_at) === selectedDate)
+    : entries;
+
   // Mood Statistics
   const happyCount = entries.filter((e) => e.emoji === 'happy').length;
   const neutralCount = entries.filter((e) => e.emoji === 'neutral').length;
@@ -138,7 +157,7 @@ export default function JournalDashboardPage() {
       {/* Main Content Layout */}
       <main className="max-w-5xl mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        {/* Kolom Kiri: Input Form & Emoji Selection */}
+        {/* Kolom Kiri: Input Form, Kalender Jurnal & Gamification */}
         <div className="md:col-span-1 space-y-6">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <h2 className="text-lg font-semibold text-slate-800 mb-4">
@@ -187,6 +206,13 @@ export default function JournalDashboardPage() {
               </button>
             </form>
           </div>
+
+          {/* Opsi Kalender Interaktif (Melihat & Recall Jurnal Lama) */}
+          <JournalCalendar
+            entryDates={entryDatesSet}
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+          />
 
           {/* Gamification & Daily Streak Card */}
           <div className="bg-gradient-to-br from-indigo-700 via-purple-700 to-indigo-900 p-6 rounded-xl text-white shadow-lg border border-indigo-500/30 relative overflow-hidden">
@@ -246,9 +272,41 @@ export default function JournalDashboardPage() {
 
         {/* Kolom Kanan: Feed Riwayat Jurnal */}
         <div className="md:col-span-2 space-y-4">
-          <h2 className="text-lg font-semibold text-slate-800">
-            Riwayat Catatan
-          </h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-slate-800">
+              Riwayat Catatan
+            </h2>
+            {selectedDate && (
+              <span className="text-xs bg-indigo-100 text-indigo-800 font-medium px-2.5 py-1 rounded-full">
+                Terfilter por Kalender
+              </span>
+            )}
+          </div>
+
+          {/* Alert Filter Status Kalender */}
+          {selectedDate && (
+            <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3.5 flex justify-between items-center text-xs text-indigo-900 shadow-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-base">📅</span>
+                <span>
+                  Menampilkan jurnal tanggal{' '}
+                  <strong className="font-bold">
+                    {new Date(selectedDate + 'T00:00:00').toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </strong>
+                </span>
+              </div>
+              <button
+                onClick={() => setSelectedDate(null)}
+                className="bg-white hover:bg-indigo-100 text-indigo-700 font-semibold px-3 py-1 rounded-lg border border-indigo-300 transition shadow-xs"
+              >
+                Tampilkan Semua Jurnal
+              </button>
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-50 text-red-600 text-sm p-4 rounded-lg border border-red-100">
@@ -260,13 +318,32 @@ export default function JournalDashboardPage() {
             <div className="text-center py-12 text-slate-500 text-sm">
               Memuat catatan jurnal...
             </div>
-          ) : entries.length === 0 ? (
-            <div className="bg-white p-8 rounded-xl text-center border border-slate-200 text-slate-500 text-sm">
-              Belum ada jurnal tersimpan. Mulai tulis cerita harimu!
+          ) : filteredEntries.length === 0 ? (
+            <div className="bg-white p-8 rounded-xl text-center border border-slate-200 text-slate-500 text-sm space-y-3">
+              <p>
+                {selectedDate
+                  ? `Tidak ada jurnal yang tercatat pada tanggal ${new Date(
+                      selectedDate + 'T00:00:00'
+                    ).toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}.`
+                  : 'Belum ada jurnal tersimpan. Mulai tulis cerita harimu!'}
+              </p>
+              {selectedDate && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate(null)}
+                  className="inline-block bg-indigo-600 text-white font-medium px-4 py-1.5 rounded-lg text-xs hover:bg-indigo-700 transition"
+                >
+                  Lihat Semua Jurnal
+                </button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
-              {entries.map((entry) => {
+              {filteredEntries.map((entry) => {
                 const badge = getEmojiBadge(entry.emoji);
                 return (
                   <div
