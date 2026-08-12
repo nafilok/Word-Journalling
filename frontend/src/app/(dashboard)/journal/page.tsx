@@ -49,7 +49,7 @@ export default function JournalDashboardPage() {
     try {
       // Mengambil entri jurnal & statistik streak secara bersamaan
       const [entriesData, statsData] = await Promise.all([
-        apiFetch<JournalEntry[]>('/api/entries?page=1&limit=10'),
+        apiFetch<JournalEntry[]>('/api/entries'),
         apiFetch<JournalStats>('/api/entries/stats').catch(() => null),
       ]);
       setEntries(entriesData);

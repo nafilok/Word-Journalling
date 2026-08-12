@@ -48,19 +48,22 @@ class JournalRepository:
         self.db.refresh(entry_db)
         return entry_db
 
-    def get_user_entries(self, user_id: str, limit: int = 10, offset: int = 0) -> List[JournalEntryModel]:
+    def get_user_entries(self, user_id: str, limit: Optional[int] = None, offset: Optional[int] = None) -> List[JournalEntryModel]:
         """
-        Mengambil entri jurnal milik user tertentu dengan Pagination.
+        Mengambil entri jurnal milik user tertentu.
         Diurutkan berdasarkan created_at terbaru (Descending).
+        Jika `limit` None, mengambil seluruh entri jurnal.
         """
-        return (
+        query = (
             self.db.query(JournalEntryModel)
             .filter(JournalEntryModel.user_id == user_id)
             .order_by(JournalEntryModel.created_at.desc())
-            .limit(limit)
-            .offset(offset)
-            .all()
         )
+        if limit is not None:
+            query = query.limit(limit)
+        if offset is not None and offset > 0:
+            query = query.offset(offset)
+        return query.all()
 
     def get_user_entry_dates(self, user_id: str) -> List[datetime]:
         """

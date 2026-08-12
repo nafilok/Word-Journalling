@@ -68,15 +68,16 @@ def create_entry(
 
 @router.get("", response_model=List[JournalEntryResponse])
 def get_my_entries(
-    limit: int = Query(default=10, ge=1, le=100, description="Jumlah data per halaman"),
+    limit: Optional[int] = Query(default=None, ge=1, description="Jumlah data per halaman"),
     page: int = Query(default=1, ge=1, description="Nomor halaman"),
     current_user: UserResponse = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Mengambil riwayat jurnal milik pengguna yang sedang login (Terisolasi & Terpaginasi).
+    Mengambil riwayat jurnal milik pengguna yang sedang login.
+    Jika `limit` tidak diberikan, mengembalikan seluruh entri jurnal.
     """
-    offset = (page - 1) * limit
+    offset = (page - 1) * limit if limit is not None else None
     journal_repo = JournalRepository(db)
     entries = journal_repo.get_user_entries(
         user_id=str(current_user.id),
