@@ -22,7 +22,7 @@ TABLE OF CONTENTS
 8. Environment Variables
 9. Future Enhancements
 
-
+--------------------------------------------------------------------------------
 1. PROJECT OVERVIEW
 --------------------------------------------------------------------------------
 Word Journaling is a personal daily journaling platform that allows users to 
